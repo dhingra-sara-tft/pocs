@@ -1,0 +1,59 @@
+<!-- Inside index.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Razorpay</title>
+  </head>
+
+  <body>
+    <span>
+      Payment of 400 Rupees
+      <button id="pay">Pay Now</button>
+    </span>
+    <hr />
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      window.onload = async () => {
+        const data = await fetch("http://localhost:8000/api/v1/create-order", {
+          method: "POST",
+          body: JSON.stringify({
+            amount: 400,
+            currency: "INR",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const order = await data.json();
+        console.log(order);
+
+        const options = {
+          key: "rzp_test_nYYEARAo7cyagH",
+          amount: order.amount,
+          currency: order.currency,
+          name: "Dummy",
+          description: "Dummy",
+          order_id: order.id,
+          handler: function (response) {
+            console.log(response);
+            alert("Payment Succeeded");
+          },
+        };
+        var razorpayObject = new Razorpay(options);
+        console.log(razorpayObject);
+        razorpayObject.on("payment.failed", function (response) {
+          console.log(response);
+          alert("Payment Failed");
+        });
+
+        document.getElementById("pay").onclick = function (e) {
+          e.preventDefault();
+          razorpayObject.open();
+        };
+      };
+    </script>
+  </body>
+</html>
